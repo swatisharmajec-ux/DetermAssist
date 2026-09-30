@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DetrmAssist — Review Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0F1F3D;
+  --navy-mid: #1A2F50;
+  --teal: #028090;
+  --teal-light: #02C39A;
+  --teal-pale: #E0F5F7;
+  --white: #FFFFFF;
+  --off-white: #F0F4F8;
+  --light-gray: #E8EEF4;
+  --mid-gray: #94A3B8;
+  --dark-text: #1E293B;
+  --body-text: #334155;
+  --purple: #6D55C7;
+  --purple-light: #EEF2FF;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --coral: #D85A30;
+  --coral-light: #FEF2EE;
+  --green: #1D9E75;
+  --green-light: #ECFDF5;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(15,31,61,0.08);
+  --font-display: 'Lora', Georgia, serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--off-white);color:var(--body-text);line-height:1.55;font-size:14.5px}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* HEADER */
+header{background:var(--navy);padding:1.5rem 2rem}
+.header-inner{max-width:840px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-badge{background:var(--teal);color:white;font-family:var(--font-mono);font-size:11px;font-weight:600;padding:4px 8px;border-radius:5px;letter-spacing:0.5px}
+.brand-name{color:white;font-family:var(--font-display);font-size:20px;font-weight:600}
+.brand-sub{color:var(--mid-gray);font-size:12px;margin-top:2px}
+.release-filter{display:flex;align-items:center;gap:8px}
+.release-filter label{color:var(--mid-gray);font-size:12px}
+.release-filter input{font-family:var(--font-mono);font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:white;width:100px}
+.release-filter input::placeholder{color:var(--mid-gray)}
+
+/* DEMO BANNER */
+#demo-banner{display:none;background:var(--amber-light);color:var(--amber);border-bottom:1px solid #FDE9C8;padding:8px 2rem;font-size:12.5px;text-align:center}
+#demo-banner.show{display:block}
+
+/* LAYOUT */
+main{max-width:840px;margin:0 auto;padding:2rem}
+
+/* STAT STRIP */
+.stats{display:flex;gap:0;border:1px solid var(--light-gray);border-radius:var(--radius);overflow:hidden;background:white;margin-bottom:2.5rem;box-shadow:var(--shadow)}
+.stat{flex:1;padding:0.9rem 1rem;text-align:center;border-right:1px solid var(--light-gray)}
+.stat:last-child{border-right:none}
+.stat-val{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy)}
+.stat-lbl{font-size:10.5px;color:var(--mid-gray);margin-top:2px;text-transform:uppercase;letter-spacing:0.4px}
+
+/* SECTION HEADINGS */
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem}
+.section-title{font-family:var(--font-display);font-size:19px;font-weight:600;color:var(--navy)}
+.section-note{font-size:12px;color:var(--mid-gray)}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin:2.5rem 0 1rem;border-bottom:1px solid var(--light-gray)}
+.tab{background:none;border:none;font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--mid-gray);padding:8px 4px;cursor:pointer;border-bottom:2px solid transparent;margin-right:1.25rem}
+.tab.active{color:var(--navy);border-bottom-color:var(--teal)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* QUEUE CARDS */
+.queue-empty{background:white;border:1px dashed var(--light-gray);border-radius:var(--radius);padding:2rem;text-align:center;color:var(--mid-gray);font-size:13.5px}
+.queue-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:0.85rem;border-left:4px solid var(--amber);overflow:hidden}
+.queue-card-top{padding:1rem 1.25rem 0.75rem}
+.queue-key{font-family:var(--font-mono);font-size:12px;color:var(--mid-gray)}
+.queue-trigger{font-size:15px;color:var(--dark-text);font-weight:600;margin-top:3px}
+.queue-meta{font-size:11.5px;color:var(--mid-gray);margin-top:3px}
+.queue-actions{display:flex;gap:8px;padding:0 1.25rem 1rem}
+.btn{font-family:var(--font-body);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:6px;border:1px solid var(--light-gray);background:white;color:var(--dark-text);cursor:pointer;transition:all 0.15s}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.btn-primary{background:var(--navy);color:white;border-color:var(--navy)}
+.btn-primary:hover{background:var(--navy-mid);color:white}
+.btn-text{background:none;border:none;color:var(--mid-gray);font-size:12px;text-decoration:underline;cursor:pointer;padding:4px}
+
+.queue-form{display:none;background:var(--off-white);border-top:1px solid var(--light-gray);padding:1rem 1.25rem}
+.queue-form.open{display:block}
+.form-row{margin-bottom:0.65rem}
+.form-row label{display:block;font-size:11.5px;font-weight:600;color:var(--body-text);margin-bottom:3px}
+.form-row input, .form-row select, .form-row textarea{width:100%;font-family:var(--font-body);font-size:13px;padding:7px 9px;border-radius:6px;border:1px solid var(--light-gray);background:white;color:var(--dark-text)}
+.form-row textarea{resize:vertical;min-height:52px}
+.form-submit-row{display:flex;gap:8px;margin-top:0.75rem}
+
+.card-confirmed{border-left-color:var(--green)}
+.confirm-msg{padding:1rem 1.25rem;color:var(--green);font-size:13px;font-weight:600}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;background:white;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+th{text-align:left;font-size:10.5px;font-weight:600;color:var(--mid-gray);text-transform:uppercase;letter-spacing:0.4px;padding:9px 12px;background:var(--off-white);border-bottom:1px solid var(--light-gray)}
+td{padding:10px 12px;border-bottom:1px solid var(--light-gray);font-size:13px;color:var(--dark-text);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.mono{font-family:var(--font-mono);font-size:12px;color:var(--body-text)}
+
+.badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;color:white;font-weight:700;font-size:11px}
+.badge-D{background:var(--purple)} .badge-E{background:var(--coral)}
+.badge-T{background:var(--green)} .badge-R{background:var(--amber)}
+
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.pill-gap{background:var(--amber-light);color:var(--amber)}
+.pill-exception{background:var(--light-gray);color:var(--navy-mid)}
+.pill-decision{background:var(--green-light);color:var(--green)}
+
+.promote-btn{font-size:11px;padding:4px 9px}
+.promote-btn.done{color:var(--green);border-color:var(--green);cursor:default}
+
+footer{max-width:840px;margin:0 auto;padding:1.5rem 2rem 3rem;color:var(--mid-gray);font-size:11.5px}
+
+@media(max-width:640px){
+  main, footer, .header-inner{padding-left:1.25rem;padding-right:1.25rem}
+  .stats{flex-wrap:wrap}
+  .stat{flex:1 1 33%;border-bottom:1px solid var(--light-gray)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-badge">DETRM</span>
+      <div>
+        <div class="brand-name">Assist</div>
+        <div class="brand-sub">Today's briefing</div>
+      </div>
+    </div>
+    <div class="release-filter">
+      <label for="release-input">Release</label>
+      <input id="release-input" type="text" placeholder="all">
+    </div>
+  </div>
+</header>
+
+<div id="demo-banner">Showing sample data — couldn't reach a DetrmAssist backend at <span id="api-base-label"></span>. Start the API and reload to see live data.</div>
+
+<main>
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-val" id="stat-total">–</div><div class="stat-lbl">Disruptions</div></div>
+    <div class="stat"><div class="stat-val" id="stat-queue">–</div><div class="stat-lbl">Waiting on you</div></div>
+    <div class="stat"><div class="stat-val" id="stat-decisions">–</div><div class="stat-lbl">Decisions logged</div></div>
+    <div class="stat"><div class="stat-val" id="stat-exceptions">–</div><div class="stat-lbl">Exceptions logged</div></div>
+    <div class="stat"><div class="stat-val" id="stat-promoted">–</div><div class="stat-lbl">Patterns promoted</div></div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title">Review queue</div>
+    <div class="section-note" id="queue-count-note"></div>
+  </div>
+  <div id="queue-list"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="decisions">Decision Register</button>
+    <button class="tab" data-tab="trace-log">Resilience Trace Log</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-decisions">
+    <table>
+      <thead><tr><th>Issue</th><th>Type</th><th>Owner</th><th>Rationale</th><th>Source</th></tr></thead>
+      <tbody id="decisions-body"></tbody>
+    </table>
+  </div>
+
+  <div class="tab-panel" id="panel-trace-log">
+    <table>
+      <thead><tr><th>Issue</th><th>Status</th><th>Detail</th><th>Reason</th><th></th></tr></thead>
+      <tbody id="trace-log-body"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  DetrmAssist reads and writes to your DetrmAssist API instance. Nothing here is sent anywhere else.
+</footer>
+
+<script>
+const API_BASE = (function () {
+  const stored = window.localStorage ? null : null; // no browser storage used — see below
+  return "http://localhost:8000";
+})();
+document.getElementById('api-base-label').textContent = API_BASE;
+
+let DEMO_MODE = false;
+let releaseFilter = "";
+
+// Sample data used only if the real API can't be reached, so this file is
+// still inspectable standalone (opened via file://, or before the backend
+// is running). Shapes match the live API exactly — see the schema in
+// app/models.py / app/schemas.py.
+const DEMO = {
+  disruptions: [
+    { id: "demo-1", jira_issue_key: "PROJ-101", release_id: "2.5", trigger: "fix_version_changed", resolution: "gap", trace_log_id: "rtl-1", decision_register_id: null, detected_at: new Date().toISOString() },
+    { id: "demo-2", jira_issue_key: "PROJ-104", release_id: "2.5", trigger: "status_regression", resolution: "gap", trace_log_id: "rtl-2", decision_register_id: null, detected_at: new Date().toISOString() },
+    { id: "demo-3", jira_issue_key: "PROJ-102", release_id: "2.5", trigger: "priority_downgrade", resolution: "captured_decision", trace_log_id: null, decision_register_id: "dr-1", detected_at: new Date().toISOString() },
+  ],
+  decisions: [
+    { id: "dr-1", jira_issue_key: "PROJ-102", release_id: "2.5", classification: "D", owner: "unassigned", rationale: "Auto-resolved from disruption trigger priority_downgrade.", source: "rule", status: "proposed" },
+  ],
+  traceLog: [
+    { id: "rtl-1", disruption_event_id: "demo-1", jira_issue_key: "PROJ-101", release_id: "2.5", gap_flag: true, exception_flag: false, status: "proposed", disruption_reason: null, promoted_to_rule: false },
+    { id: "rtl-2", disruption_event_id: "demo-2", jira_issue_key: "PROJ-104", release_id: "2.5", gap_flag: true, exception_flag: false, status: "proposed", disruption_reason: null, promoted_to_rule: false },
+  ],
+};
+
+const TRIGGER_LABELS = {
+  fix_version_changed: "Moved out of its release",
+  status_regression: "Status moved backward",
+  epic_unlinked: "Unlinked from its epic",
+  blocked_unresolved: "Blocked, unresolved",
+  priority_downgrade: "Priority downgraded",
+};
+
+async function apiGet(path) {
+  const res = await fetch(API_BASE + path);
+  if (!res.ok) throw new Error("request failed: " + path);
+  return res.json();
+}
+
+async function apiPatch(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("request failed: " + path);
+  return res.json();
+}
+
+function relTime(iso) {
+  if (!iso) return "";
+  const mins = Math.max(1, Math.round((Date.now() - new Date(iso)) / 60000));
+  if (mins < 60) return mins + "m ago";
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return hrs + "h ago";
+  return Math.round(hrs / 24) + "d ago";
+}
+
+let state = { disruptions: [], decisions: [], traceLog: [] };
+
+async function loadAll() {
+  const q = releaseFilter ? "?release_id=" + encodeURIComponent(releaseFilter) : "";
+  try {
+    const [disruptions, decisions, traceLog] = await Promise.all([
+      apiGet("/disruptions/" + q),
+      apiGet("/decisions/" + q),
+      apiGet("/trace-log/" + q),
+    ]);
+    state = { disruptions, decisions, traceLog };
+    DEMO_MODE = false;
+    document.getElementById("demo-banner").classList.remove("show");
+  } catch (e) {
+    DEMO_MODE = true;
+    document.getElementById("demo-banner").classList.add("show");
+    state = {
+      disruptions: releaseFilter ? DEMO.disruptions.filter(d => d.release_id === releaseFilter) : DEMO.disruptions,
+      decisions: releaseFilter ? DEMO.decisions.filter(d => d.release_id === releaseFilter) : DEMO.decisions,
+      traceLog: releaseFilter ? DEMO.traceLog.filter(d => d.release_id === releaseFilter) : DEMO.traceLog,
+    };
+  }
+  render();
+}
+
+function render() {
+  const queueItems = state.traceLog.filter(t => t.status === "proposed" && t.gap_flag);
+  document.getElementById("stat-total").textContent = state.disruptions.length;
+  document.getElementById("stat-queue").textContent = queueItems.length;
+  document.getElementById("stat-decisions").textContent = state.decisions.length;
+  document.getElementById("stat-exceptions").textContent = state.traceLog.filter(t => t.exception_flag).length;
+  document.getElementById("stat-promoted").textContent = state.traceLog.filter(t => t.promoted_to_rule).length;
+  document.getElementById("queue-count-note").textContent =
+    queueItems.length === 0 ? "" : queueItems.length + " need a decision";
+
+  renderQueue(queueItems);
+  renderDecisions();
+  renderTraceLog();
+}
+
+function renderQueue(items) {
+  const el = document.getElementById("queue-list");
+  if (items.length === 0) {
+    el.innerHTML = '<div class="queue-empty">Nothing waiting. DetrmAssist will surface anything it can\'t explain here.</div>';
+    return;
+  }
+  el.innerHTML = items.map(item => {
+    const disruption = state.disruptions.find(d => d.id === item.disruption_event_id) || {};
+    const label = TRIGGER_LABELS[disruption.trigger] || disruption.trigger || "Disruption detected";
+    return `
+    <div class="queue-card" data-event="${disruption.id || ''}">
+      <div class="queue-card-top">
+        <div class="queue-key">${item.jira_issue_key} · ${item.release_id}</div>
+        <div class="queue-trigger">${label}</div>
+        <div class="queue-meta">detected ${relTime(disruption.detected_at)} · no linked explanation found</div>
+      </div>
+      <div class="queue-actions">
+        <button class="btn" onclick="doConfirmGap('${disruption.id}', this)">Confirm gap</button>
+        <button class="btn" onclick="toggleForm('${disruption.id}', 'decision')">Log as decision</button>
+        <button class="btn" onclick="toggleForm('${disruption.id}', 'exception')">Mark as exception</button>
+      </div>
+      <div class="queue-form" id="form-decision-${disruption.id}">
+        <div class="form-row">
+          <label>Classification</label>
+          <select id="cls-${disruption.id}">
+            <option value="D">Decision</option>
+            <option value="E">Enforcement</option>
+            <option value="T">Trend</option>
+            <option value="R">Review</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Owner</label><input id="owner-${disruption.id}" placeholder="name or team"></div>
+        <div class="form-row"><label>Reason</label><textarea id="reason-${disruption.id}" placeholder="what happened and why"></textarea></div>
+        <div class="form-submit-row">
+          <button class="btn btn-primary" onclick="doSupplyReason('${disruption.id}', this)">Log decision</button>
+          <button class="btn-text" onclick="toggleForm('${disruption.id}', 'decision')">Cancel</button>
+        </div>
+      </div>
+      <div class="queue-form" id="form-exception-${disruption.id}">
+        <div class="form-row"><label>Reported by</label><input id="rep-${disruption.id}" placeholder="who flagged this"></div>
+        <div class="form-row"><label>Context</label><textarea id="ctx-${disruption.id}" placeholder="what happened off-tool"></textarea></div>
+        <div class="form-submit-row">
+          <button class="btn btn-primary" onclick="doException('${disruption.id}', this)">Log exception</button>
+          <button class="btn-text" onclick="toggleForm('${disruption.id}', 'exception')">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleForm(eventId, kind) {
+  const other = kind === "decision" ? "exception" : "decision";
+  const otherEl = document.getElementById(`form-${other}-${eventId}`);
+  if (otherEl) otherEl.classList.remove("open");
+  const el = document.getElementById(`form-${kind}-${eventId}`);
+  if (el) el.classList.toggle("open");
+}
+
+function cardConfirmed(eventId, message) {
+  const card = document.querySelector(`.queue-card[data-event="${eventId}"]`);
+  if (!card) return;
+  card.classList.add("card-confirmed");
+  card.innerHTML = `<div class="confirm-msg">${message}</div>`;
+}
+
+async function doConfirmGap(eventId, btn) {
+  btn.disabled = true;
+  try {
+    if (!DEMO_MODE) await apiPatch(`/disruptions/${eventId}/resolve`, { action: "confirm_gap" });
+    cardConfirmed(eventId, "Gap confirmed");
+    setTimeout(loadAll, 700);
+  } catch (e) {
+    btn.disabled = false;
+    alert("Couldn't confirm — check the API connection.");
+  }
+}
+
+async function doSupplyReason(eventId, btn) {
+  const classification = document.getElementById(`cls-${eventId}`).value;
+  const owner = document.getElementById(`owner-${eventId}`).value.trim();
+  const reason = document.getElementById(`reason-${eventId}`).value.trim();
+  if (!owner || !reason) { alert("Owner and reason are both required."); return; }
+  btn.disabled = true;
+  try {
+    if (!DEMO_MODE) await apiPatch(`/disruptions/${eventId}/resolve`, { action: "supply_reason", classification, owner, reason });
+    cardConfirmed(eventId, "Decision logged");
+    setTimeout(loadAll, 700);
+  } catch (e) {
+    btn.disabled = false;
+    alert("Couldn't log the decision — check the API connection.");
+  }
+}
+
+async function doException(eventId, btn) {
+  const owner = document.getElementById(`rep-${eventId}`).value.trim();
+  const reason = document.getElementById(`ctx-${eventId}`).value.trim();
+  if (!owner || !reason) { alert("Reported by and context are both required."); return; }
+  btn.disabled = true;
+  try {
+    if (!DEMO_MODE) await apiPatch(`/disruptions/${eventId}/resolve`, { action: "reclassify_exception", owner, reason });
+    cardConfirmed(eventId, "Logged as exception");
+    setTimeout(loadAll, 700);
+  } catch (e) {
+    btn.disabled = false;
+    alert("Couldn't log the exception — check the API connection.");
+  }
+}
+
+async function doPromote(entryId, btn) {
+  btn.disabled = true;
+  try {
+    if (!DEMO_MODE) await apiPatch(`/trace-log/${entryId}/promote`, {});
+    btn.textContent = "Promoted";
+    btn.classList.add("done");
+  } catch (e) {
+    btn.disabled = false;
+    alert("Couldn't promote — check the API connection.");
+  }
+}
+
+function renderDecisions() {
+  const body = document.getElementById("decisions-body");
+  if (state.decisions.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" style="color:var(--mid-gray)">No decisions logged yet for this release.</td></tr>';
+    return;
+  }
+  body.innerHTML = state.decisions.map(d => `
+    <tr>
+      <td class="mono">${d.jira_issue_key}</td>
+      <td><span class="badge badge-${d.classification}">${d.classification}</span></td>
+      <td>${d.owner}</td>
+      <td>${d.rationale}</td>
+      <td>${d.source}</td>
+    </tr>`).join("");
+}
+
+function renderTraceLog() {
+  const body = document.getElementById("trace-log-body");
+  if (state.traceLog.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" style="color:var(--mid-gray)">Nothing logged yet for this release.</td></tr>';
+    return;
+  }
+  body.innerHTML = state.traceLog.map(t => {
+    // A confirmed Gap is still a Gap — confirmation means the PM verified
+    // it's real governance debt, not that it's resolved. Only an Exception
+    // reads as "settled," because it's an acknowledged, explained boundary.
+    const pill = t.exception_flag
+      ? '<span class="pill pill-exception">Exception</span>'
+      : '<span class="pill pill-gap">Gap</span>';
+    const detail = t.exception_context || t.disruption_reason || "—";
+    const promoteBtn = t.gap_flag
+      ? (t.promoted_to_rule
+          ? '<button class="btn promote-btn done" disabled>Promoted</button>'
+          : `<button class="btn promote-btn" onclick="doPromote('${t.id}', this)">Promote to rule</button>`)
+      : "";
+    return `
+    <tr>
+      <td class="mono">${t.jira_issue_key}</td>
+      <td>${pill}</td>
+      <td>${t.status}</td>
+      <td>${detail}</td>
+      <td>${promoteBtn}</td>
+    </tr>`;
+  }).join("");
+}
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+let filterTimeout;
+document.getElementById("release-input").addEventListener("input", (e) => {
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
+    releaseFilter = e.target.value.trim();
+    loadAll();
+  }, 350);
+});
+
+loadAll();
+</script>
+</body>
+</html>
